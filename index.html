@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style type="text/css">
+table td {
+
+border: 1px solid black;
+width: 80px;
+height: 50px;
+
+}
+
+table{
+border-collapse: collapse;
+}
+div {
+padding: 50px;
+}
+input{
+    margin: 10px;
+}
+#cTable{
+    margin-top: 5px;
+}
+h1{
+    text-align: center;
+}
+.show{
+    display: block;
+}
+.hide{
+    display: none;
+}
+
+</style>
+</head>
+<body>
+<h1>Excel Sheet</h1>
+<div clas=="show" id="tableReq">
+    <label>Enter Row</label><input id ="tRow"/><br/>
+    <label>Enter column</label><input id ="tCol"/><br/>
+
+    <button id ="cTable">create Table</button>
+
+</div>
+
+<div class="hide" id="wrapper">
+
+<div id ="table_warpper"></div>
+
+<button id ="insertRow">insert Row</button>
+<button id ="insertCol">insert Column</button>
+<button id ="deleteCol">Delete Column</button>
+<button id ="deleteRow">Delete Row</button>
+
+</div>
+<script type="text/javascript">
+
+var table={},row=[],col=[];
+var wrapper = document.getElementById("table_warpper");
+
+var createTable= function(r,c) {
+
+            this.tref = document.createElement("table");
+            this.tref.setAttribute("contentEditable",true);
+            var row=[],col=[];
+            for(var i=0;i<r;i++)
+            {
+                row[i]=this.tref.insertRow(i);
+                for(var j=0;j<c;j++)
+            {
+            col[j,j]=row[i].insertCell(j);
+            }
+            }
+            var head = this.tref.createTHead();
+            var hRow = head.insertRow();
+            var hCol=[];
+            for(i=0;i<c;i++)
+            {
+                hCol[i]= hRow.insertCell();
+                hCol[i].textContent = "Column "+i;
+                hCol[i].setAttribute("contentEditable",false);
+
+            }
+            //console.log(col.length);
+            this.rCount = ++row.length;
+            this.cCount = col.length;
+            this.sAsce = true;
+
+            wrapper.parentNode.classList.remove("hide");
+            //return {'tref':tempTable,'rCount':row.length,'cCount':col.length,sAsce:true}
+
+        };
+
+createTable.prototype = {
+                    insertRow : function(){
+                        var row = this.tref.insertRow();
+                        for(var i=0,j=this.cCount;i<j;i++){row.insertCell(i)}
+                         this.rCount++;
+                        },
+                    insertCol : function(){
+                        for(var i=1,j=this.rCount;i<j;i++)
+                        {
+                        this.tref.rows[i].insertCell();
+                        }
+                        var thRC = this.tref.tHead.rows[0].insertCell();
+                        thRC.textContent = "Column "+this.cCount;
+                        thRC.setAttribute("contentEditable",false);
+                        this.cCount++;
+                        },
+                    deleteRow : function(){
+                        this.tref.deleteRow(-1);
+                        this.rCount--;
+                        },
+                    deleteCol : function(){
+                        for(var i=1,j=this.rCount;i<j;i++)
+                        {
+                            this.tref.rows[i].deleteCell(-1);
+                        }
+                        this.cCount--;
+                        this.tref.tHead.rows[0].deleteCell(-1);
+
+                        },  
+                    sort: function(col){
+                        var len = this.rCount,
+                        i, j, stop;
+                        var t= this.tref;
+                        console.log(col);
+                        for (i=1; i < len; i++)
+                        {
+                            console.log(i);
+                            for (j=1, stop=len-i; j < stop; j++)
+                            {
+                                console.log(j,table.tref.rows[j].cells[col].innerHTML,j+1,table.tref.rows[j+1].cells[col].innerHTML);
+                                if(table.sAsce == true)
+                                {    
+                                    if (table.tref.rows[j].cells[col].innerHTML > table.tref.rows[j+1].cells[col].innerHTML)
+                                    {
+                                        console.log("success");
+                                        console.log(j,table.tref.rows[j].cells[col].innerHTML,j+1,table.tref.rows[j+1].cells[col].innerHTML);
+                                        table.swap(j,j+1);
+
+                                    }
+                                }
+                                else
+                                {
+                                    if (table.tref.rows[j].cells[col].innerHTML < table.tref.rows[j+1].cells[col].innerHTML)
+                                    {
+                                        console.log("success");
+                                        console.log(j,table.tref.rows[j].cells[col].innerHTML,j+1,table.tref.rows[j+1].cells[col].innerHTML);
+                                        table.swap(j,j+1);
+
+                                    }
+                                }
+                            }
+                           // table.tref.rows[1].cells[col].innerHTML
+                        }
+                        table.sAsce = !(table.sAsce);
+                        },
+                    swap :function(f_index,s_index){
+                            var temp =[];
+                            for(var i=0;i<this.cCount;i++)
+                            {
+                                        temp[i] = table.tref.rows[f_index].cells[i].innerHTML;
+                                        table.tref.rows[f_index].cells[i].innerHTML = table.tref.rows[s_index].cells[i].innerHTML;
+                                        table.tref.rows[s_index].cells[i].innerHTML = temp[i];
+                            }
+                            return;
+                        }
+    };
+
+   // return items;
+document.getElementById("insertRow").addEventListener("click",function(e){
+table.insertRow();
+});
+document.getElementById("insertCol").addEventListener("click",function(e){
+table.insertCol();
+});
+document.getElementById("deleteCol").addEventListener("click",function(e){
+table.deleteCol();
+});
+document.getElementById("deleteRow").addEventListener("click",function(e){
+table.deleteRow();
+});
+document.getElementById("cTable").addEventListener("click",function(e){
+
+    var r= document.getElementById("tRow").value;
+    var c= document.getElementById("tCol").value;
+    table = new createTable(r,c);
+    wrapper.appendChild(table.tref);
+});
+wrapper.addEventListener("click",function(e){
+        var th = table.tref.tHead.rows[0].cells;
+        Array.prototype.forEach.call(th,function(i,j){
+        if(e.target == i){
+
+        //console.log(e,e.target);
+        table.sort(j);
+        }
+        });
+});
+
+</script>
+</body>
+</html>
